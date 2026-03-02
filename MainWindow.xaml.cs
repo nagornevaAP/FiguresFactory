@@ -1,52 +1,50 @@
 ﻿using FiguresFactoryLab.Factories;
+
 using System.Windows;
 using System.Windows.Controls;
-using FiguresFactoryLab.Models;
 
 namespace FiguresFactoryLab
 {
     public partial class MainWindow : Window
     {
+        private IFigureFactory _currentFactory;
+
         public MainWindow()
         {
             InitializeComponent();
+            colorCombo.SelectedIndex = 0; 
         }
 
         private void colorCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (colorCombo.SelectedItem == null) return;
 
-            figuresPanel.Children.Clear();
+            string colorName = (colorCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
 
-            string color = (colorCombo.SelectedItem as ComboBoxItem)?.Content.ToString();
-
-            CircleCreator circleC;
-            SquareCreator squareC;
-            TriangleCreator triangleC;
-
-            switch (color)
+            // СТАРЫЙ switch — работает в C# 7.3
+            switch (colorName)
             {
                 case "Красный":
-                    circleC = new RedCircleCreator();
-                    squareC = new RedSquareCreator();
-                    triangleC = new RedTriangleCreator();
+                    _currentFactory = new RedFactory();
                     break;
                 case "Синий":
-                    circleC = new BlueCircleCreator();
-                    squareC = new BlueSquareCreator();
-                    triangleC = new BlueTriangleCreator();
+                    _currentFactory = new BlueFactory();
                     break;
                 case "Зелёный":
-                    circleC = new GreenCircleCreator();
-                    squareC = new GreenSquareCreator();
-                    triangleC = new GreenTriangleCreator();
+                    _currentFactory = new GreenFactory();
                     break;
-                default: return;
+                default:
+                    _currentFactory = null;
+                    return;
             }
 
-            figuresPanel.Children.Add(circleC.CreateCircle().CreateUIElement());
-            figuresPanel.Children.Add(squareC.CreateSquare().CreateUIElement());
-            figuresPanel.Children.Add(triangleC.CreateTriangle().CreateUIElement());
+            if (_currentFactory == null) return;
+
+            figuresPanel.Children.Clear();
+
+            figuresPanel.Children.Add(_currentFactory.CreateCircle().CreateUIElement());
+            figuresPanel.Children.Add(_currentFactory.CreateSquare().CreateUIElement());
+            figuresPanel.Children.Add(_currentFactory.CreateTriangle().CreateUIElement());
         }
     }
 }
